@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Dog Trainer" />
+<meta name="theme-color" content="#1a4a2e" />
+<title>DASD Training Log</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; background: #f7f3ee; }
+  body { font-family: 'DM Sans', 'Segoe UI', sans-serif; overscroll-behavior: none; }
+  #root { height: 100%; }
+  input, textarea, select, button { font-family: inherit; }
+  ::-webkit-scrollbar { display: none; }
+
+  .app {
+    max-width: 430px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background: #f7f3ee;
+    position: relative;
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #1a4a2e 0%, #2d7a4f 100%);
+    padding: 52px 20px 24px;
+    color: #fff;
+  }
+  .header-eyebrow { font-size: 12px; color: #a8d5b8; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; }
+  .header-title { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 800; margin-top: 4px; line-height: 1.2; }
+  .header-sub { font-size: 13px; color: #a8d5b8; margin-top: 6px; }
+
+  /* Nav */
+  .nav {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 430px;
+    background: #fff; border-top: 1px solid #ede8e0;
+    display: flex; padding: 8px 0 24px;
+    z-index: 100;
+  }
+  .nav-btn {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+    background: none; border: none; cursor: pointer; padding: 6px 0;
+    color: #bbb; transition: color 0.2s;
+  }
+  .nav-btn.active { color: #2d7a4f; }
+  .nav-icon { font-size: 22px; line-height: 1; }
+  .nav-label { font-size: 10px; font-weight: 700; }
+
+  /* Sections */
+  .section { padding: 20px 16px 110px; }
+
+  /* Cards */
+  .card {
+    background: #fff; border-radius: 16px; padding: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07); margin-bottom: 14px;
+    border: 1px solid #f0ede8;
+  }
+
+  /* Stats */
+  .stats-row { display: flex; gap: 10px; margin-bottom: 16px; }
+  .stat-card {
+    background: #fff; border-radius: 16px; padding: 14px 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07); flex: 1;
+  }
+  .stat-value { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 800; }
+  .stat-label { font-size: 10px; font-weight: 700; color: #999; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+
+  /* Inputs */
+  .label { font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; display: block; }
+  .input {
+    width: 100%; padding: 12px 14px; border-radius: 12px;
+    border: 1.5px solid #e8e2d9; background: #fff; font-size: 15px;
+    color: #2c1810; outline: none; transition: border-color 0.2s;
+    -webkit-appearance: none;
+  }
+  .input:focus { border-color: #2d7a4f; }
+  textarea.input { min-height: 100px; resize: vertical; }
+
+  /* Buttons */
+  .btn {
+    width: 100%; padding: 14px 20px; border: none; border-radius: 12px;
+    font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-primary { background: #2d7a4f; color: #fff; }
+  .btn-primary:active { background: #235e3d; }
+  .btn-secondary { background: #f5f0ea; color: #2d7a4f; }
+  .btn-danger { background: #fff5f5; color: #c05c35; border: 1px solid #f8d7d0; }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  /* Chip buttons */
+  .chips { display: flex; flex-wrap: wrap; gap: 7px; }
+  .chip {
+    padding: 7px 13px; border-radius: 20px; font-size: 12px; font-weight: 600;
+    cursor: pointer; border: 2px solid transparent; background: #f5f0ea; color: #666;
+    transition: all 0.15s;
+  }
+  .chip.selected { background: #2d7a4f; color: #fff; border-color: #2d7a4f; }
+
+  /* Rating */
+  .rating-row { display: flex; gap: 7px; }
+  .rating-btn {
+    flex: 1; padding: 10px 0; border-radius: 12px; font-size: 14px;
+    font-weight: 700; cursor: pointer; border: 2px solid transparent;
+    background: #f5f0ea; color: #888; transition: all 0.15s;
+  }
+
+  /* Log Cards */
+  .log-card { background: #fff; border-radius: 16px; margin-bottom: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); overflow: hidden; border: 1px solid #f0ede8; }
+  .log-header { padding: 14px 16px; cursor: pointer; display: flex; align-items: center; gap: 12px; }
+  .log-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .log-title { font-weight: 700; font-size: 14px; color: #2c1810; }
+  .log-sub { font-size: 12px; color: #888; margin-top: 2px; }
+  .log-body { padding: 0 16px 16px; border-top: 1px solid #f5f0ea; }
+  .log-section-label { font-size: 10px; font-weight: 700; color: #bbb; text-transform: uppercase; letter-spacing: 1px; margin: 12px 0 6px; }
+  .mini-stat { flex: 1; background: #f8f6f3; border-radius: 10px; padding: 10px; text-align: center; }
+  .mini-stat-value { font-size: 20px; font-weight: 800; }
+  .mini-stat-label { font-size: 10px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+  .notes-box { font-size: 13px; color: #555; line-height: 1.6; background: #faf8f5; border-radius: 10px; padding: 10px 12px; }
+
+  /* Alert accuracy card */
+  .accuracy-card { background: #fff; border-radius: 16px; padding: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); margin-bottom: 16px; display: flex; align-items: center; gap: 14px; border: 1px solid #f0ede8; }
+  .accuracy-num { font-family: 'Playfair Display', serif; font-size: 38px; font-weight: 800; color: #2d7a4f; }
+
+  /* Empty state */
+  .empty { text-align: center; padding: 40px 20px; color: #bbb; }
+  .empty-icon { font-size: 48px; margin-bottom: 10px; }
+  .empty-title { font-weight: 700; font-size: 15px; color: #aaa; }
+  .empty-sub { font-size: 13px; margin-top: 4px; }
+
+  /* Profile dog icon */
+  .profile-dog { text-align: center; margin-bottom: 20px; }
+  .profile-dog-icon { font-size: 64px; }
+  .profile-dog-name { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 800; color: #2d7a4f; margin-top: 4px; }
+  .profile-dog-sub { font-size: 13px; color: #888; }
+
+  /* Instruction list */
+  .instruction-list { font-size: 13px; color: #666; line-height: 1.9; padding-left: 18px; }
+  .instruction-list li b { color: #2c1810; }
+
+  /* Two-col grid */
+  .two-col { display: flex; gap: 12px; }
+  .two-col > * { flex: 1; }
+
+  /* Tag */
+  .tag {
+    display: inline-flex; align-items: center; gap: 3px;
+    background: #2d7a4f22; color: #2d7a4f;
+    border: 1px solid #2d7a4f44;
+    border-radius: 20px; padding: 2px 9px; font-size: 11px; font-weight: 700;
+    margin: 2px;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+    background: #2d7a4f; color: #fff; padding: 10px 24px; border-radius: 30px;
+    font-weight: 700; font-size: 14px; z-index: 200;
+    box-shadow: 0 4px 20px rgba(45,122,79,0.4);
+    animation: slideUp 0.3s ease;
+  }
+  @keyframes slideUp { from { opacity:0; transform: translateX(-50%) translateY(10px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }
+
+  select.input { cursor: pointer; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+
+<script type="text/babel">
+const { useState, useEffect, useCallback } = React;
+
+// ── Storage (localStorage for standalone HTML) ──────────────────────────────
+const LOGS_KEY = "dasd_logs_v1";
+const PROFILE_KEY = "dasd_profile_v1";
+
+function loadLogs() {
+  try { return JSON.parse(localStorage.getItem(LOGS_KEY) || "[]"); } catch { return []; }
+}
+function storeLogs(logs) {
+  try { localStorage.setItem(LOGS_KEY, JSON.stringify(logs)); } catch {}
+}
+function loadProfile() {
+  try { return JSON.parse(localStorage.getItem(PROFILE_KEY) || "null") || { dogName: "Dakota", childName: "My Daughter", trainerName: "" }; } catch { return { dogName: "Dakota", childName: "My Daughter", trainerName: "" }; }
+}
+function storeProfile(p) {
+  try { localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); } catch {}
+}
+
+// ── Constants ───────────────────────────────────────────────────────────────
+const SKILLS = [
+  "Low BG Alert","High BG Alert","Scent Recognition","Public Access",
+  "Retrieve Supplies","Find Handler","Stay on Task","Distraction Training",
+  "Stairs / Obstacles","Crowd Navigation","School Environment","Night Alerting",
+  "CGM Integration","Off-Leash Recall","Tethering","Deep Pressure Therapy","Emergency Alert"
+];
+const ENVIRONMENTS = [
+  "Home","School","Outdoors","Store / Mall","Restaurant",
+  "Car / Travel","Doctor's Office","Park","Gym","Other"
+];
+const RATINGS = [
+  { v:5, label:"Excellent", color:"#2d7a4f" },
+  { v:4, label:"Good",      color:"#4a9e6b" },
+  { v:3, label:"Fair",      color:"#c8963e" },
+  { v:2, label:"Needs Work",color:"#c05c35" },
+  { v:1, label:"Poor",      color:"#9b2c2c" },
+];
+
+const emptyForm = () => ({
+  date: new Date().toISOString().slice(0,10),
+  duration: "", skills: [], environment: "",
+  alertsGiven: "", alertsCorrect: "", bloodSugar: "",
+  notes: "", rating: 5
+});
+
+// ── LogCard ─────────────────────────────────────────────────────────────────
+function LogCard({ log, onDelete }) {
+  const [open, setOpen] = useState(false);
+  const r = RATINGS.find(x => x.v === log.rating) || RATINGS[0];
+  const dateStr = new Date(log.date + "T12:00:00").toLocaleDateString("en-US",
+    { weekday:"short", month:"short", day:"numeric", year:"numeric" });
+  return (
+    <div className="log-card">
+      <div className="log-header" onClick={() => setOpen(o => !o)}>
+        <div className="log-icon" style={{ background: r.color + "18" }}>🐕</div>
+        <div style={{ flex:1 }}>
+          <div className="log-title">{dateStr}</div>
+          <div className="log-sub">
+            {log.duration} min · {log.environment} ·{" "}
+            <span style={{ color: r.color, fontWeight:700 }}>{r.label}</span>
+          </div>
+        </div>
+        <span style={{ color:"#ccc", fontSize:14 }}>{open ? "▲" : "▼"}</span>
+      </div>
+
+      {open && (
+        <div className="log-body">
+          <div className="log-section-label">Skills Practiced</div>
+          <div>{log.skills.map(s => <span key={s} className="tag">{s}</span>)}</div>
+
+          {(log.alertsGiven || log.alertsCorrect || log.bloodSugar) && (
+            <>
+              <div className="log-section-label">Alert Performance</div>
+              <div style={{ display:"flex", gap:8 }}>
+                {log.alertsGiven && <div className="mini-stat">
+                  <div className="mini-stat-value" style={{ color:"#2d7a4f" }}>{log.alertsGiven}</div>
+                  <div className="mini-stat-label">Alerts Given</div>
+                </div>}
+                {log.alertsCorrect && <div className="mini-stat">
+                  <div className="mini-stat-value" style={{ color:"#4a9e6b" }}>{log.alertsCorrect}</div>
+                  <div className="mini-stat-label">Correct</div>
+                </div>}
+                {log.bloodSugar && <div className="mini-stat">
+                  <div className="mini-stat-value" style={{ color:"#c8963e" }}>{log.bloodSugar}</div>
+                  <div className="mini-stat-label">BG mg/dL</div>
+                </div>}
+              </div>
+            </>
+          )}
+
+          {log.notes && (
+            <>
+              <div className="log-section-label">Notes</div>
+              <div className="notes-box">{log.notes}</div>
+            </>
+          )}
+
+          <button className="btn btn-danger" style={{ marginTop:14, fontSize:13 }}
+            onClick={() => { if (confirm("Delete this session?")) onDelete(log.id); }}>
+            Delete Entry
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Main App ─────────────────────────────────────────────────────────────────
+function App() {
+  const [tab, setTab] = useState("home");
+  const [logs, setLogs] = useState(() => loadLogs());
+  const [profile, setProfile] = useState(() => loadProfile());
+  const [form, setForm] = useState(emptyForm());
+  const [toast, setToast] = useState("");
+  const [profileEdit, setProfileEdit] = useState(false);
+  const [profileDraft, setProfileDraft] = useState({});
+  const [filterSkill, setFilterSkill] = useState("");
+
+  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(""), 2200); };
+
+  const updateLogs = (updated) => { setLogs(updated); storeLogs(updated); };
+
+  const handleSave = () => {
+    if (!form.duration || !form.environment || form.skills.length === 0) return;
+    const log = { ...form, id: Date.now().toString() };
+    const updated = [log, ...logs];
+    updateLogs(updated);
+    setForm(emptyForm());
+    showToast("✓ Session saved!");
+    setTimeout(() => setTab("history"), 800);
+  };
+
+  const handleDelete = (id) => updateLogs(logs.filter(l => l.id !== id));
+
+  const handleSaveProfile = () => {
+    setProfile(profileDraft); storeProfile(profileDraft);
+    setProfileEdit(false); showToast("✓ Profile updated!");
+  };
+
+  const toggleSkill = (s) => setForm(f => ({
+    ...f, skills: f.skills.includes(s) ? f.skills.filter(x => x !== s) : [...f.skills, s]
+  }));
+
+  const exportCSV = () => {
+    const headers = ["Date","Duration(min)","Environment","Skills","Alerts Given","Correct Alerts","BG at Alert","Rating","Notes"];
+    const rows = logs.map(l => [
+      l.date, l.duration, l.environment,
+      `"${l.skills.join("; ")}"`, l.alertsGiven, l.alertsCorrect,
+      l.bloodSugar, l.rating, `"${(l.notes||"").replace(/"/g,'""')}"`
+    ]);
+    const csv = [headers,...rows].map(r=>r.join(",")).join("\n");
+    const a = document.createElement("a");
+    a.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
+    a.download = `${profile.dogName}_training_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    showToast("✓ CSV exported!");
+  };
+
+  // Stats
+  const totalMin = logs.reduce((s,l) => s+(parseInt(l.duration)||0), 0);
+  const avgRating = logs.length ? (logs.reduce((s,l)=>s+l.rating,0)/logs.length).toFixed(1) : "—";
+  const totalAlerts = logs.reduce((s,l)=>s+(parseInt(l.alertsGiven)||0),0);
+  const correctAlerts = logs.reduce((s,l)=>s+(parseInt(l.alertsCorrect)||0),0);
+  const accuracy = totalAlerts > 0 ? Math.round(correctAlerts/totalAlerts*100) : null;
+
+  const filtered = filterSkill ? logs.filter(l=>l.skills.includes(filterSkill)) : logs;
+
+  const ratingForV = (v) => RATINGS.find(r=>r.v===v) || RATINGS[0];
+
+  return (
+    <div className="app">
+      {/* ─── HOME ─── */}
+      {tab === "home" && <>
+        <div className="header">
+          <div className="header-eyebrow">Diabetes Alert Service Dog</div>
+          <div className="header-title">{profile.dogName}'s<br/>Training Log</div>
+          <div className="header-sub">{profile.childName}{profile.trainerName ? " · " + profile.trainerName : ""}</div>
+        </div>
+
+        <div className="section">
+          <div className="stats-row">
+            <div className="stat-card" style={{ borderTop:"3px solid #2d7a4f" }}>
+              <div className="stat-value" style={{ color:"#2d7a4f" }}>{logs.length}</div>
+              <div className="stat-label">Sessions</div>
+            </div>
+            <div className="stat-card" style={{ borderTop:"3px solid #4a9e6b" }}>
+              <div className="stat-value" style={{ color:"#4a9e6b" }}>
+                {totalMin >= 60 ? (totalMin/60).toFixed(1)+"h" : totalMin+"m"}
+              </div>
+              <div className="stat-label">Total Time</div>
+            </div>
+            <div className="stat-card" style={{ borderTop:"3px solid #c8963e" }}>
+              <div className="stat-value" style={{ color:"#c8963e" }}>{avgRating}</div>
+              <div className="stat-label">Avg Rating</div>
+            </div>
+          </div>
+
+          {accuracy !== null && (
+            <div className="accuracy-card">
+              <div className="accuracy-num">{accuracy}%</div>
+              <div>
+                <div style={{ fontWeight:700, color:"#2c1810" }}>Alert Accuracy</div>
+                <div style={{ fontSize:12, color:"#888", marginTop:2 }}>{correctAlerts} correct of {totalAlerts} total alerts</div>
+              </div>
+            </div>
+          )}
+
+          <div style={{ fontWeight:700, fontSize:16, color:"#2c1810", marginBottom:12 }}>Recent Sessions</div>
+
+          {logs.length === 0 && (
+            <div className="card empty">
+              <div className="empty-icon">🐾</div>
+              <div className="empty-title">No sessions yet</div>
+              <div className="empty-sub">Tap <b>Log</b> below to add your first session!</div>
+            </div>
+          )}
+
+          {logs.slice(0,3).map(log => <LogCard key={log.id} log={log} onDelete={handleDelete}/>)}
+
+          {logs.length > 3 && (
+            <button className="btn btn-secondary" onClick={() => setTab("history")} style={{ marginBottom:12 }}>
+              View All {logs.length} Sessions →
+            </button>
+          )}
+
+          <button className="btn btn-primary" onClick={() => setTab("log")}>
+            + Log New Training Session
+          </button>
+        </div>
+      </>}
+
+      {/* ─── LOG ─── */}
+      {tab === "log" && <>
+        <div className="header" style={{ padding:"52px 20px 20px" }}>
+          <div className="header-title" style={{ fontSize:24 }}>Log a Session</div>
+          <div className="header-sub">Record today's training with {profile.dogName}</div>
+        </div>
+
+        <div className="section">
+          {/* Date & Duration */}
+          <div className="card">
+            <div className="two-col">
+              <div>
+                <label className="label">Date</label>
+                <input type="date" className="input" value={form.date}
+                  onChange={e=>setForm(f=>({...f,date:e.target.value}))} />
+              </div>
+              <div>
+                <label className="label">Duration (min)</label>
+                <input type="number" className="input" placeholder="e.g. 30"
+                  value={form.duration} onChange={e=>setForm(f=>({...f,duration:e.target.value}))} />
+              </div>
+            </div>
+          </div>
+
+          {/* Environment */}
+          <div className="card">
+            <label className="label">Training Environment</label>
+            <div className="chips">
+              {ENVIRONMENTS.map(env => (
+                <button key={env} className={`chip ${form.environment===env?"selected":""}`}
+                  onClick={()=>setForm(f=>({...f,environment:env}))}>{env}</button>
+              ))}
+            </div>
+          </div>
+
+          {/* Skills */}
+          <div className="card">
+            <label className="label">Skills Practiced <span style={{color:"#c05c35"}}>*</span></label>
+            <div className="chips">
+              {SKILLS.map(skill => (
+                <button key={skill} className={`chip ${form.skills.includes(skill)?"selected":""}`}
+                  onClick={()=>toggleSkill(skill)}>{skill}</button>
+              ))}
+            </div>
+          </div>
+
+          {/* Alerts */}
+          <div className="card">
+            <label className="label">Alert Performance</label>
+            <div style={{ display:"flex", gap:10 }}>
+              <div style={{ flex:1 }}>
+                <label className="label" style={{fontSize:10}}>Alerts Given</label>
+                <input type="number" className="input" placeholder="0"
+                  value={form.alertsGiven} onChange={e=>setForm(f=>({...f,alertsGiven:e.target.value}))} />
+              </div>
+              <div style={{ flex:1 }}>
+                <label className="label" style={{fontSize:10}}>Correct</label>
+                <input type="number" className="input" placeholder="0"
+                  value={form.alertsCorrect} onChange={e=>setForm(f=>({...f,alertsCorrect:e.target.value}))} />
+              </div>
+              <div style={{ flex:1 }}>
+                <label className="label" style={{fontSize:10}}>BG (mg/dL)</label>
+                <input type="number" className="input" placeholder="—"
+                  value={form.bloodSugar} onChange={e=>setForm(f=>({...f,bloodSugar:e.target.value}))} />
+              </div>
+            </div>
+          </div>
+
+          {/* Rating */}
+          <div className="card">
+            <label className="label">Session Rating</label>
+            <div className="rating-row">
+              {RATINGS.map(r => (
+                <button key={r.v} className="rating-btn"
+                  onClick={()=>setForm(f=>({...f,rating:r.v}))}
+                  style={{
+                    background: form.rating===r.v ? r.color : "#f5f0ea",
+                    color: form.rating===r.v ? "#fff" : "#999",
+                    borderColor: form.rating===r.v ? r.color : "transparent"
+                  }}>{r.v}★</button>
+              ))}
+            </div>
+            <div style={{ textAlign:"center", marginTop:8, fontSize:13, fontWeight:700,
+              color: ratingForV(form.rating).color }}>
+              {ratingForV(form.rating).label}
+            </div>
+          </div>
+
+          {/* Notes */}
+          <div className="card">
+            <label className="label">Training Notes</label>
+            <textarea className="input" placeholder="Observations, behaviors, progress, areas to improve..."
+              value={form.notes} onChange={e=>setForm(f=>({...f,notes:e.target.value}))} />
+          </div>
+
+          <button className="btn btn-primary" onClick={handleSave}
+            disabled={!form.duration || !form.environment || form.skills.length===0}>
+            Save Training Session
+          </button>
+          {(!form.duration || !form.environment || form.skills.length===0) && (
+            <p style={{ textAlign:"center", fontSize:12, color:"#bbb", marginTop:8 }}>
+              Duration, environment & at least one skill required.
+            </p>
+          )}
+        </div>
+      </>}
+
+      {/* ─── HISTORY ─── */}
+      {tab === "history" && <>
+        <div className="header" style={{ padding:"52px 20px 20px" }}>
+          <div className="header-title" style={{ fontSize:24 }}>Training History</div>
+          <div className="header-sub">{logs.length} total sessions logged</div>
+        </div>
+
+        <div className="section">
+          <div className="card" style={{ padding:"12px 14px" }}>
+            <label className="label">Filter by Skill</label>
+            <select className="input" value={filterSkill} onChange={e=>setFilterSkill(e.target.value)}>
+              <option value="">All Skills</option>
+              {SKILLS.map(s=><option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+
+          <button className="btn btn-secondary" onClick={exportCSV} style={{ marginBottom:16 }}>
+            ⬇ Export All Logs as CSV
+          </button>
+
+          {filtered.length === 0 && (
+            <div className="card empty">
+              <div className="empty-icon">🐾</div>
+              <div className="empty-title">No sessions found</div>
+              <div className="empty-sub">{filterSkill ? "Try a different skill filter." : "Log your first session!"}</div>
+            </div>
+          )}
+
+          {filtered.map(log => <LogCard key={log.id} log={log} onDelete={handleDelete}/>)}
+        </div>
+      </>}
+
+      {/* ─── PROFILE ─── */}
+      {tab === "profile" && <>
+        <div className="header" style={{ padding:"52px 20px 20px" }}>
+          <div className="header-title" style={{ fontSize:24 }}>Profile & Settings</div>
+        </div>
+
+        <div className="section">
+          <div className="card">
+            <div className="profile-dog">
+              <div className="profile-dog-icon">🐕‍🦺</div>
+              <div className="profile-dog-name">{profile.dogName}</div>
+              <div className="profile-dog-sub">Diabetes Alert Service Dog</div>
+            </div>
+
+            {!profileEdit ? <>
+              <div style={{ marginBottom:10 }}>
+                <span className="label">Dog's Name</span>
+                <div style={{ fontWeight:700, color:"#2c1810" }}>{profile.dogName}</div>
+              </div>
+              <div style={{ marginBottom:10 }}>
+                <span className="label">Child / Handler</span>
+                <div style={{ fontWeight:700, color:"#2c1810" }}>{profile.childName}</div>
+              </div>
+              <div style={{ marginBottom:16 }}>
+                <span className="label">Trainer Name</span>
+                <div style={{ fontWeight:700, color:"#2c1810" }}>{profile.trainerName || "—"}</div>
+              </div>
+              <button className="btn btn-secondary"
+                onClick={()=>{ setProfileDraft({...profile}); setProfileEdit(true); }}>
+                Edit Profile
+              </button>
+            </> : <>
+              <div style={{ marginBottom:12 }}>
+                <label className="label">Dog's Name</label>
+                <input className="input" value={profileDraft.dogName}
+                  onChange={e=>setProfileDraft(p=>({...p,dogName:e.target.value}))} />
+              </div>
+              <div style={{ marginBottom:12 }}>
+                <label className="label">Child / Handler Name</label>
+                <input className="input" value={profileDraft.childName}
+                  onChange={e=>setProfileDraft(p=>({...p,childName:e.target.value}))} />
+              </div>
+              <div style={{ marginBottom:16 }}>
+                <label className="label">Trainer Name</label>
+                <input className="input" value={profileDraft.trainerName}
+                  onChange={e=>setProfileDraft(p=>({...p,trainerName:e.target.value}))} />
+              </div>
+              <div style={{ display:"flex", gap:10 }}>
+                <button className="btn btn-primary" onClick={handleSaveProfile} style={{ flex:1 }}>Save</button>
+                <button className="btn btn-secondary" onClick={()=>setProfileEdit(false)} style={{ flex:1 }}>Cancel</button>
+              </div>
+            </>}
+          </div>
+
+          {/* iPhone Instructions */}
+          <div className="card">
+            <div style={{ fontWeight:700, fontSize:14, color:"#2c1810", marginBottom:10 }}>
+              📱 Add to iPhone Home Screen
+            </div>
+            <ol className="instruction-list">
+              <li>Open this file's link in <b>Safari</b> on iPhone</li>
+              <li>Tap the <b>Share</b> button (⬆ box with arrow)</li>
+              <li>Scroll down and tap <b>"Add to Home Screen"</b></li>
+              <li>Tap <b>Add</b> in the top-right corner</li>
+              <li>The app now lives on your home screen!</li>
+            </ol>
+          </div>
+
+          {/* Hosting Instructions */}
+          <div className="card">
+            <div style={{ fontWeight:700, fontSize:14, color:"#2c1810", marginBottom:10 }}>
+              🌐 How to Host This App (Free)
+            </div>
+            <div style={{ fontSize:13, color:"#555", lineHeight:1.8 }}>
+              <b>Option 1 — Netlify (easiest):</b><br/>
+              Go to <span style={{color:"#2d7a4f"}}>netlify.com/drop</span> → drag &amp; drop this HTML file → get a shareable link instantly.<br/><br/>
+              <b>Option 2 — GitHub Pages (free forever):</b><br/>
+              Create a free GitHub account → new repo → upload this file → enable Pages in Settings.<br/><br/>
+              <b>Option 3 — Replit:</b><br/>
+              Go to <span style={{color:"#2d7a4f"}}>replit.com</span> → new HTML project → paste this file → Share link.<br/><br/>
+              All training data is saved locally on each device using the browser's storage.
+            </div>
+          </div>
+
+          {/* Export Info */}
+          <div className="card">
+            <div style={{ fontWeight:700, fontSize:14, color:"#2c1810", marginBottom:6 }}>📤 Sharing Training Data</div>
+            <div style={{ fontSize:13, color:"#666", lineHeight:1.6 }}>
+              Use <b>Export CSV</b> in the History tab to download all sessions as a spreadsheet. Perfect for sharing with your endocrinologist, vet, or training program coordinator.
+            </div>
+          </div>
+        </div>
+      </>}
+
+      {/* ─── Nav ─── */}
+      <nav className="nav">
+        {[
+          { id:"home",    icon:"🏠", label:"Home"    },
+          { id:"log",     icon:"✏️",  label:"Log"     },
+          { id:"history", icon:"📋", label:"History" },
+          { id:"profile", icon:"⚙️",  label:"Profile" },
+        ].map(({id,icon,label}) => (
+          <button key={id} className={`nav-btn ${tab===id?"active":""}`} onClick={()=>setTab(id)}>
+            <span className="nav-icon">{icon}</span>
+            <span className="nav-label">{label}</span>
+          </button>
+        ))}
+      </nav>
+
+      {/* ─── Toast ─── */}
+      {toast && <div className="toast">{toast}</div>}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
